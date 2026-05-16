@@ -1,0 +1,345 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Tokens ── */
+:root {
+  --bg:      #111318;
+  --surface: #191c24;
+  --card:    #1e2230;
+  --border:  #2a2f3d;
+  --text:    #dde3f0;
+  --sub:     #8892a8;
+  --accent:  #4f8ef7;
+  --danger:  #e05c5c;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg:      #f5f6f8;
+  --surface: #ffffff;
+  --card:    #ffffff;
+  --border:  #e2e5ec;
+  --text:    #1a1e2b;
+  --sub:     #6b7280;
+  --accent:  #2563eb;
+  --danger:  #dc2626;
+  color-scheme: light;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: background .2s, color .2s;
+}
+
+/* ── Topbar ── */
+.topbar {
+  height: 52px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: background .2s, border-color .2s;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.topbar-username {
+  font-size: 13px;
+  color: var(--sub);
+  padding: 0 8px;
+}
+
+.topbar-back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--sub);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background .15s, color .15s;
+}
+
+.topbar-back:hover { color: var(--text); background: var(--border); }
+
+.topbar-filename {
+  font-size: 13px;
+  color: var(--sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 320px;
+}
+
+/* ── Buttons — shared base ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--text);
+  transition: background .15s, color .15s, border-color .15s, filter .15s;
+}
+
+.btn-primary  { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { filter: brightness(1.12); }
+
+.btn-outline  { border-color: var(--border); color: var(--sub); }
+.btn-outline:hover { border-color: var(--sub); color: var(--text); }
+
+.btn-danger   { border-color: var(--border); color: var(--danger); }
+.btn-danger:hover { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); }
+
+.btn-ghost    { color: var(--sub); }
+.btn-ghost:hover { color: var(--text); background: var(--border); }
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--sub);
+}
+.btn-icon:hover { color: var(--text); background: var(--border); }
+
+.btn-full { width: 100%; padding: 9px; }
+
+/* ── Login ── */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px 36px;
+  transition: background .2s, border-color .2s;
+}
+
+.login-logo {
+  display: flex;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.login-card h1 {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin-bottom: 4px;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: var(--sub);
+  font-size: 13px;
+  margin-bottom: 28px;
+}
+
+.form-group { margin-bottom: 14px; }
+.form-group:last-of-type { margin-bottom: 20px; }
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--sub);
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 9px 11px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.form-group input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.form-group input::placeholder { color: var(--sub); }
+
+.alert-error {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  border-radius: 6px;
+  padding: 9px 13px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.theme-corner { position: fixed; bottom: 20px; right: 20px; }
+
+/* ── Main layout ── */
+.main-content {
+  padding: 28px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Upload bar ── */
+.upload-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 24px;
+  transition: background .2s, border-color .2s;
+}
+
+.upload-zone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 7px;
+  padding: 13px 16px;
+  cursor: pointer;
+  color: var(--sub);
+  font-size: 13px;
+  transition: border-color .15s, color .15s, background .15s;
+}
+
+.upload-zone:hover,
+.upload-zone.drag-over {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.upload-zone input { display: none; }
+
+.upload-error {
+  color: var(--danger);
+  font-size: 12px;
+  text-align: center;
+  padding: 4px 0;
+}
+
+/* ── PDF grid ── */
+.pdf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+/* ── PDF card ── */
+.pdf-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  transition: border-color .15s, background .2s;
+}
+
+.pdf-card:hover { border-color: var(--accent); }
+
+.pdf-title {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qr-link { display: block; line-height: 0; border-radius: 6px; overflow: hidden; }
+
+.qr-image {
+  width: 190px;
+  height: 190px;
+  background: #fff;
+  padding: 8px;
+  border-radius: 6px;
+  display: block;
+}
+
+/* 2-column grid — primary spans full width, secondary+danger share the row below */
+.pdf-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.pdf-actions form { display: contents; }
+
+.pdf-actions .btn { width: 100%; }
+
+.pdf-actions .btn-primary { grid-column: 1 / -1; }
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 24px;
+  color: var(--sub);
+  text-align: center;
+}
+
+/* ── Viewer ── */
+.viewer-page { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.pdf-embed   { flex: 1; width: 100%; border: none; display: block; }

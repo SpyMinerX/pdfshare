@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Share</title>
+  <script>(function(){ document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark'); })()</script>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      PDF Share
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-username"><%- user.displayName %></span>
+      <button class="btn btn-icon" onclick="toggleTheme()" id="theme-btn" title="Design wechseln"></button>
+      <a href="/logout" class="btn btn-ghost">Abmelden</a>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <div class="upload-bar">
+      <form method="POST" action="/upload" enctype="multipart/form-data" id="upload-form" style="display:contents">
+        <label for="pdf-input" class="upload-zone" id="upload-zone">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 16 12 12 8 16"/>
+            <line x1="12" y1="12" x2="12" y2="21"/>
+            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+          </svg>
+          <span id="zone-label">PDF hier ablegen oder klicken zum Auswählen</span>
+          <input type="file" id="pdf-input" name="pdf" accept=".pdf,application/pdf" required>
+        </label>
+        <button type="submit" class="btn btn-primary" id="upload-btn" disabled>Hochladen</button>
+      </form>
+      <% if (error === 'no-file') { %><p class="upload-error">Keine Datei ausgewählt.</p><% } %>
+    </div>
+
+    <% if (pdfs.length === 0) { %>
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <p>Noch keine PDFs — oben hochladen.</p>
+      </div>
+    <% } else { %>
+      <div class="pdf-grid">
+        <% pdfs.forEach(pdf => { %>
+          <div class="pdf-card">
+            <div class="pdf-title" title="<%= pdf.filename %>"><%= pdf.filename.replace(/\.pdf$/i, '') %></div>
+            <a href="/view/<%= encodeURIComponent(pdf.filename) %>" class="qr-link">
+              <img src="<%= pdf.qrDataUrl %>" alt="QR" class="qr-image" data-filename="<%= pdf.filename %>">
+            </a>
+            <div class="pdf-actions">
+              <a href="/view/<%= encodeURIComponent(pdf.filename) %>" class="btn btn-primary">Öffnen</a>
+              <button class="btn btn-outline" onclick="downloadQR(this)">QR speichern</button>
+              <form method="POST" action="/delete/<%= encodeURIComponent(pdf.filename) %>" onsubmit="return confirm('«<%= pdf.filename %>» löschen?')">
+                <button type="submit" class="btn btn-danger">Löschen</button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+
+  <script>
+    /* theme */
+    const icons = {
+      dark:  '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+      light: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    };
+    function toggleTheme() {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateIcon();
+    }
+    function updateIcon() {
+      const t = document.documentElement.getAttribute('data-theme');
+      document.getElementById('theme-btn').innerHTML = t === 'dark' ? icons.dark : icons.light;
+    }
+    updateIcon();
+
+    /* upload */
+    const input    = document.getElementById('pdf-input');
+    const zoneLbl  = document.getElementById('zone-label');
+    const uploadBtn= document.getElementById('upload-btn');
+    const zone     = document.getElementById('upload-zone');
+
+    input.addEventListener('change', () => {
+      if (input.files.length) { zoneLbl.textContent = input.files[0].name; uploadBtn.disabled = false; }
+    });
+    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', ()=> zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0];
+      if (f && f.name.toLowerCase().endsWith('.pdf')) {
+        const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files;
+        zoneLbl.textContent = f.name; uploadBtn.disabled = false;
+      }
+    });
+
+    /* QR download */
+    function downloadQR(btn) {
+      const img  = btn.closest('.pdf-card').querySelector('.qr-image');
+      const name = img.dataset.filename;
+      const title= name.replace(/\.pdf$/i, '');
+      const pad  = 16, qs = 190, fh = 22;
+      const c    = document.createElement('canvas');
+      c.width    = qs + pad * 2;
+      c.height   = qs + pad * 2 + fh;
+      const ctx  = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+      const qi   = new Image();
+      qi.onload  = () => {
+        ctx.drawImage(qi, pad, pad, qs, qs);
+        ctx.fillStyle = '#1a1e2b';
+        ctx.font      = `600 13px -apple-system, Arial, sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        let t = title, mw = c.width - pad * 2;
+        while (ctx.measureText(t).width > mw && t.length > 1) t = t.slice(0, -1);
+        if (t !== title) t += '…';
+        ctx.fillText(t, c.width / 2, qs + pad + fh / 2);
+        const a = document.createElement('a');
+        a.download = title + '_qr.png'; a.href = c.toDataURL('image/png'); a.click();
+      };
+      qi.src = img.src;
+    }
+  </script>
+</body>
+</html>
