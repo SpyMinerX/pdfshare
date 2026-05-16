@@ -1,13 +1,20 @@
 services:
   pdf-share:
+    image: spyminer/pdfshare:latest
     build: .
     restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      PORT: "3000"
+      NODE_ENV: production
+      BASE_URL: https://pdf.yourdomain.com
     volumes:
       - uploads:/app/uploads
+      - data:/app/data
 
 volumes:
   uploads:
+  data:

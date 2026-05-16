@@ -64,7 +64,7 @@ router.get('/view/:uuid', (req, res) => {
   const entry = getPdf(req.params.uuid);
   if (!entry) return res.status(404).render('error', { message: 'PDF nicht gefunden.' });
   const pdfUrl = `/pdf/${entry.uuid}`;
-  res.render('viewer', { filename: entry.filename, pdfUrl });
+  res.render('viewer', { filename: entry.filename, pdfUrl, isAuthenticated: req.isAuthenticated() });
 });
 
 module.exports = router;

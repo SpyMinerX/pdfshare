@@ -9,12 +9,14 @@
 </head>
 <body class="viewer-page">
   <header class="topbar">
+    <% if (isAuthenticated) { %>
     <a href="/" class="topbar-back">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
       Zurück
     </a>
+    <% } %>
     <div class="topbar-filename"><%- filename %></div>
     <div class="topbar-right">
       <button class="btn btn-icon" onclick="toggleTheme()" id="theme-btn" title="Design wechseln"></button>
