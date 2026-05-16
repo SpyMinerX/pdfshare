@@ -340,6 +340,19 @@ body {
   text-align: center;
 }
 
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 16px 24px;
+  font-size: 12px;
+  color: var(--sub);
+  border-top: 1px solid var(--border);
+  margin-top: 32px;
+}
+
+.footer a { color: var(--sub); text-decoration: none; }
+.footer a:hover { color: var(--text); }
+
 /* ── Viewer ── */
 .viewer-page { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 .pdf-embed   { flex: 1; width: 100%; border: none; display: block; }
