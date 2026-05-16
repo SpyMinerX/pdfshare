@@ -7,31 +7,20 @@ if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-function listPDFs() {
-  return fs
-    .readdirSync(UPLOAD_DIR)
-    .filter((f) => f.toLowerCase().endsWith('.pdf'))
-    .sort((a, b) => a.localeCompare(b));
-}
-
-function streamPDF(filename, res) {
-  const safe = path.basename(filename);
-  if (!safe.toLowerCase().endsWith('.pdf')) throw new Error('Not a PDF');
-
-  const filePath = path.join(UPLOAD_DIR, safe);
+function streamPDF(uuid, originalFilename, res) {
+  const filePath = path.join(UPLOAD_DIR, `${uuid}.pdf`);
   if (!fs.existsSync(filePath)) throw new Error('File not found');
 
   const stat = fs.statSync(filePath);
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `inline; filename="${safe}"`);
+  res.setHeader('Content-Disposition', `inline; filename="${originalFilename}"`);
   res.setHeader('Content-Length', stat.size);
   fs.createReadStream(filePath).pipe(res);
 }
 
-function deletePDF(filename) {
-  const safe = path.basename(filename);
-  if (!safe.toLowerCase().endsWith('.pdf')) throw new Error('Not a PDF');
-  fs.unlinkSync(path.join(UPLOAD_DIR, safe));
+function deletePDF(uuid) {
+  const filePath = path.join(UPLOAD_DIR, `${uuid}.pdf`);
+  if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 }
 
-module.exports = { listPDFs, streamPDF, deletePDF, UPLOAD_DIR };
+module.exports = { streamPDF, deletePDF, UPLOAD_DIR };

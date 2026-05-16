@@ -9,7 +9,7 @@ COPY src/       ./src/
 COPY views/     ./views/
 COPY public/    ./public/
 
-RUN mkdir -p uploads
+RUN mkdir -p uploads data
 
 EXPOSE 3000
 

@@ -54,13 +54,13 @@
         <% pdfs.forEach(pdf => { %>
           <div class="pdf-card">
             <div class="pdf-title" title="<%= pdf.filename %>"><%= pdf.filename.replace(/\.pdf$/i, '') %></div>
-            <a href="/view/<%= encodeURIComponent(pdf.filename) %>" class="qr-link">
+            <a href="/view/<%= pdf.uuid %>" class="qr-link">
               <img src="<%= pdf.qrDataUrl %>" alt="QR" class="qr-image" data-filename="<%= pdf.filename %>">
             </a>
             <div class="pdf-actions">
-              <a href="/view/<%= encodeURIComponent(pdf.filename) %>" class="btn btn-primary">Öffnen</a>
+              <a href="/view/<%= pdf.uuid %>" class="btn btn-primary">Öffnen</a>
               <button class="btn btn-outline" onclick="downloadQR(this)">QR speichern</button>
-              <form method="POST" action="/delete/<%= encodeURIComponent(pdf.filename) %>" onsubmit="return confirm('«<%= pdf.filename %>» löschen?')">
+              <form method="POST" action="/delete/<%= pdf.uuid %>" onsubmit="return confirm('«<%= pdf.filename %>» löschen?')">
                 <button type="submit" class="btn btn-danger">Löschen</button>
               </form>
             </div>

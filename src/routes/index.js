@@ -1,8 +1,9 @@
-const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 const multer = require('multer');
 const QRCode = require('qrcode');
-const { listPDFs, deletePDF, UPLOAD_DIR } = require('../storage');
+const { deletePDF, UPLOAD_DIR } = require('../storage');
+const { addPdf, getPdf, getAllPdfs, deletePdf: deleteDbEntry } = require('../db');
 const { requireAuth } = require('../middleware');
 const config = require('../config');
 const router = express.Router();
@@ -10,7 +11,11 @@ const router = express.Router();
 const upload = multer({
   storage: multer.diskStorage({
     destination: UPLOAD_DIR,
-    filename: (req, file, cb) => cb(null, file.originalname),
+    filename: (req, file, cb) => {
+      const uuid = crypto.randomUUID();
+      req.generatedUuid = uuid;
+      cb(null, `${uuid}.pdf`);
+    },
   }),
   fileFilter: (req, file, cb) => {
     const ok =
@@ -18,17 +23,17 @@ const upload = multer({
       file.originalname.toLowerCase().endsWith('.pdf');
     cb(ok ? null : new Error('Only PDF files are allowed'), ok);
   },
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
+  limits: { fileSize: 100 * 1024 * 1024 },
 });
 
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const files = listPDFs();
+    const entries = getAllPdfs();
     const pdfs = await Promise.all(
-      files.map(async (filename) => {
-        const viewUrl = `${config.baseUrl}/view/${encodeURIComponent(filename)}`;
+      entries.map(async (entry) => {
+        const viewUrl = `${config.baseUrl}/view/${entry.uuid}`;
         const qrDataUrl = await QRCode.toDataURL(viewUrl, { width: 200, margin: 1 });
-        return { filename, viewUrl, qrDataUrl };
+        return { ...entry, viewUrl, qrDataUrl };
       })
     );
     res.render('index', { user: req.user, pdfs, error: req.query.error });
@@ -40,22 +45,26 @@ router.get('/', requireAuth, async (req, res) => {
 
 router.post('/upload', requireAuth, upload.single('pdf'), (req, res) => {
   if (!req.file) return res.redirect('/?error=no-file');
+  addPdf(req.generatedUuid, req.file.originalname);
   res.redirect('/');
 });
 
-router.post('/delete/:filename', requireAuth, (req, res) => {
+router.post('/delete/:uuid', requireAuth, (req, res) => {
+  const uuid = req.params.uuid;
   try {
-    deletePDF(decodeURIComponent(req.params.filename));
+    deletePDF(uuid);
+    deleteDbEntry(uuid);
   } catch (err) {
     console.error('Delete error:', err.message);
   }
   res.redirect('/');
 });
 
-router.get('/view/:filename', (req, res) => {
-  const filename = decodeURIComponent(req.params.filename);
-  const pdfUrl = `/pdf/${encodeURIComponent(filename)}`;
-  res.render('viewer', { filename, pdfUrl });
+router.get('/view/:uuid', (req, res) => {
+  const entry = getPdf(req.params.uuid);
+  if (!entry) return res.status(404).render('error', { message: 'PDF nicht gefunden.' });
+  const pdfUrl = `/pdf/${entry.uuid}`;
+  res.render('viewer', { filename: entry.filename, pdfUrl });
 });
 
 module.exports = router;
