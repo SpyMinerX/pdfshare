@@ -12,15 +12,16 @@ router.post('/login', (req, res, next) => {
     req.body.username = req.body.username.replace(/^.*\\/, '').replace(/@.*$/, '');
   }
 
-  passport.authenticate('ldapauth', (err, user) => {
+  passport.authenticate('ldapauth', (err, user, info) => {
     if (err) {
       const isConnErr = err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT';
       console.error('[LDAP] login error for "%s": %s (code=%s)', req.body.username, err.message, err.code);
       return res.redirect('/login?error=' + (isConnErr ? 'server' : '1'));
     }
     if (!user) {
-      console.warn('[LDAP] no user returned for "%s"', req.body.username);
-      return res.redirect('/login?error=1');
+      const reason = info && info.message === 'forbidden' ? 'forbidden' : '1';
+      console.warn('[LDAP] access denied for "%s" (reason=%s)', req.body.username, reason);
+      return res.redirect('/login?error=' + reason);
     }
 
     console.log('[LDAP] authenticated:', user.sAMAccountName || user.dn);

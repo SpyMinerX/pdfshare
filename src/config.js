@@ -14,6 +14,7 @@ module.exports = {
     bindCredentials: process.env.LDAP_BIND_CREDENTIALS,
     searchBase: process.env.LDAP_SEARCH_BASE,
     searchFilter: process.env.LDAP_SEARCH_FILTER || '(sAMAccountName={{username}})',
+    allowedGroup: process.env.LDAP_ALLOWED_GROUP || null,
   },
 
 };

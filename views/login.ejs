@@ -22,6 +22,8 @@
 
     <% if (error === 'server') { %>
       <div class="alert-error">Domänencontroller nicht erreichbar.</div>
+    <% } else if (error === 'forbidden') { %>
+      <div class="alert-error">Ihr Konto ist nicht für den Zugriff auf diese Anwendung berechtigt.</div>
     <% } else if (error) { %>
       <div class="alert-error">Benutzername oder Passwort falsch.</div>
     <% } %>
