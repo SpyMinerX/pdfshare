@@ -11,6 +11,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
+app.set('trust proxy', 1); // trust nginx reverse proxy
 app.use(morgan('combined'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -22,10 +23,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: config.isProduction,
+      secure: true,
       httpOnly: true,
       sameSite: 'lax',
-      maxAge: 8 * 60 * 60 * 1000, // 8 hours
+      maxAge: 8 * 60 * 60 * 1000,
     },
   })
 );
