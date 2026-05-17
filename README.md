@@ -33,6 +33,40 @@ The QR URL `/view/{slotUuid}` never changes — only the file it points to does.
 
 ---
 
+## Docker Hub
+
+The image is published automatically to **[spyminer/pdfshare](https://hub.docker.com/r/spyminer/pdfshare)** on Docker Hub via GitHub Actions on every push to `main`.
+
+```bash
+docker pull spyminer/pdfshare:latest
+```
+
+| Tag | When it's built |
+|---|---|
+| `latest` | Every push to `main` |
+| `1.2.3` | When a GitHub Release is published with that tag |
+| `1.2` | Same release — major.minor alias |
+
+### One-time setup
+
+The workflow needs two GitHub repository secrets to authenticate with Docker Hub:
+
+1. **Create a Docker Hub access token**
+   - Go to [hub.docker.com](https://hub.docker.com) → avatar → **Account Settings → Personal access tokens → Generate new token**
+   - Give it a name (e.g. `github-actions`) and **Read & Write** permissions
+   - Copy the token — it's only shown once
+
+2. **Add the secrets to your GitHub repo**
+   - Go to your GitHub repo → **Settings → Secrets and variables → Actions → New repository secret**
+   - Add `DOCKERHUB_USERNAME` with value `spyminer`
+   - Add `DOCKERHUB_TOKEN` with the token from step 1
+
+3. Push to `main` — the workflow in [`.github/workflows/docker.yml`](.github/workflows/docker.yml) builds and pushes automatically.
+
+To publish a versioned release: create a GitHub Release tagged `v1.0.0`. The workflow will push `spyminer/pdfshare:1.0.0` and `spyminer/pdfshare:1.0` in addition to `latest`.
+
+---
+
 ## Quick start (Docker Compose)
 
 **1. Copy the example env file and fill in your values:**
