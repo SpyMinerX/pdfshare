@@ -39,6 +39,7 @@
         <button type="submit" class="btn btn-primary" id="upload-btn" disabled>Hochladen</button>
       </form>
       <% if (error === 'no-file') { %><p class="upload-error">Keine Datei ausgewählt.</p><% } %>
+      <% if (error === 'replace-failed') { %><p class="upload-error">Ersetzen fehlgeschlagen.</p><% } %>
     </div>
 
     <% if (pdfs.length === 0) { %>
@@ -57,13 +58,65 @@
             <a href="/view/<%= pdf.uuid %>" class="qr-link">
               <img src="<%= pdf.qrDataUrl %>" alt="QR" class="qr-image" data-filename="<%= pdf.filename %>">
             </a>
+
             <div class="pdf-actions">
               <a href="/view/<%= pdf.uuid %>" class="btn btn-primary">Öffnen</a>
               <button class="btn btn-outline" onclick="downloadQR(this)">QR speichern</button>
-              <form method="POST" action="/delete/<%= pdf.uuid %>" onsubmit="return confirm('«<%= pdf.filename %>» löschen?')">
+              <button class="btn btn-outline" onclick="togglePanel('replace-<%= pdf.uuid %>')">Ersetzen</button>
+              <% if (pdf.versions.length > 1) { %>
+                <button class="btn btn-outline" onclick="togglePanel('history-<%= pdf.uuid %>')">Verlauf (<%= pdf.versions.length %>)</button>
+              <% } else { %>
+                <div></div>
+              <% } %>
+              <form method="POST" action="/delete/<%= pdf.uuid %>" onsubmit="return confirm('«<%= pdf.filename %>» und alle Versionen löschen?')">
                 <button type="submit" class="btn btn-danger">Löschen</button>
               </form>
             </div>
+
+            <div class="panel" id="replace-<%= pdf.uuid %>">
+              <form method="POST" action="/replace/<%= pdf.uuid %>" enctype="multipart/form-data" class="replace-form">
+                <label class="replace-file-label">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 16 12 12 8 16"/>
+                    <line x1="12" y1="12" x2="12" y2="21"/>
+                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                  </svg>
+                  <span class="replace-file-text">PDF auswählen...</span>
+                  <input type="file" name="pdf" accept=".pdf,application/pdf" required class="replace-file-input">
+                </label>
+                <div class="replace-form-btns">
+                  <button type="submit" class="btn btn-primary btn-sm">Hochladen</button>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="togglePanel('replace-<%= pdf.uuid %>')">Abbrechen</button>
+                </div>
+              </form>
+            </div>
+
+            <% if (pdf.versions.length > 1) { %>
+            <div class="panel" id="history-<%= pdf.uuid %>">
+              <div class="history-title">Versionen</div>
+              <% pdf.versions.forEach(v => { %>
+              <div class="version-row<%= v.versionUuid === pdf.activeVersion ? ' version-active' : '' %>">
+                <div class="version-meta">
+                  <span class="version-name" title="<%= v.filename %>"><%= v.filename.replace(/\.pdf$/i, '') %></span>
+                  <span class="version-date"><%= new Date(v.uploadedAt).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'2-digit'}) %> <%= new Date(v.uploadedAt).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'}) %></span>
+                </div>
+                <div class="version-btns">
+                  <% if (v.versionUuid === pdf.activeVersion) { %>
+                    <span class="version-badge">Aktiv</span>
+                  <% } else { %>
+                    <form method="POST" action="/activate/<%= pdf.uuid %>/<%= v.versionUuid %>">
+                      <button type="submit" class="btn-ver btn-ver-restore" title="Aktivieren">↩</button>
+                    </form>
+                    <form method="POST" action="/delete-version/<%= pdf.uuid %>/<%= v.versionUuid %>" onsubmit="return confirm('Diese Version löschen?')">
+                      <button type="submit" class="btn-ver btn-ver-del" title="Löschen">✕</button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+              <% }) %>
+            </div>
+            <% } %>
+
           </div>
         <% }) %>
       </div>
@@ -92,7 +145,7 @@
     }
     updateIcon();
 
-    /* upload */
+    /* main upload */
     const input    = document.getElementById('pdf-input');
     const zoneLbl  = document.getElementById('zone-label');
     const uploadBtn= document.getElementById('upload-btn');
@@ -111,6 +164,20 @@
         zoneLbl.textContent = f.name; uploadBtn.disabled = false;
       }
     });
+
+    /* replace file inputs — update label text on selection */
+    document.querySelectorAll('.replace-file-input').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const lbl = inp.closest('.replace-file-label').querySelector('.replace-file-text');
+        if (lbl) lbl.textContent = inp.files[0]?.name || 'PDF auswählen...';
+      });
+    });
+
+    /* expand/collapse panels */
+    function togglePanel(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('panel-open');
+    }
 
     /* QR download */
     function downloadQR(btn) {

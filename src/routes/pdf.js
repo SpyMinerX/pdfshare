@@ -7,7 +7,7 @@ router.get('/:uuid', (req, res) => {
   const entry = getPdf(req.params.uuid);
   if (!entry) return res.status(404).send('PDF not found');
   try {
-    streamPDF(entry.uuid, entry.filename, res);
+    streamPDF(entry.activeVersion, entry.filename, res);
   } catch (err) {
     res.status(404).send('PDF not found');
   }
