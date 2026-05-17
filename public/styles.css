@@ -357,6 +357,48 @@ body {
 .viewer-page { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 .pdf-embed   { flex: 1; width: 100%; border: none; display: block; }
 
+/* ── Title row with edit button ── */
+.pdf-title-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+}
+.pdf-title-row .pdf-title { flex: 1; }
+
+.btn-edit-title {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--sub);
+  font-size: 14px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color .15s, background .15s;
+}
+.btn-edit-title:hover { color: var(--text); background: var(--border); }
+
+/* ── Rename form ── */
+.rename-form { display: flex; flex-direction: column; gap: 8px; }
+
+.rename-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.rename-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
 /* ── Panels (replace / history) ── */
 .panel {
   display: none;

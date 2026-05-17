@@ -54,7 +54,10 @@
       <div class="pdf-grid">
         <% pdfs.forEach(pdf => { %>
           <div class="pdf-card">
-            <div class="pdf-title" title="<%= pdf.filename %>"><%= pdf.filename.replace(/\.pdf$/i, '') %></div>
+            <div class="pdf-title-row">
+              <span class="pdf-title" title="<%= pdf.filename %>"><%= pdf.filename.replace(/\.pdf$/i, '') %></span>
+              <button class="btn-edit-title" onclick="togglePanel('rename-<%= pdf.uuid %>')" title="Umbenennen">✎</button>
+            </div>
             <a href="/view/<%= pdf.uuid %>" class="qr-link">
               <img src="<%= pdf.qrDataUrl %>" alt="QR" class="qr-image" data-filename="<%= pdf.filename %>">
             </a>
@@ -70,6 +73,18 @@
               <% } %>
               <form method="POST" action="/delete/<%= pdf.uuid %>" onsubmit="return confirm('«<%= pdf.filename %>» und alle Versionen löschen?')">
                 <button type="submit" class="btn btn-danger">Löschen</button>
+              </form>
+            </div>
+
+            <div class="panel" id="rename-<%= pdf.uuid %>">
+              <form method="POST" action="/rename/<%= pdf.uuid %>" class="rename-form">
+                <input type="text" name="name" class="rename-input"
+                       value="<%= pdf.filename.replace(/\.pdf$/i, '') %>"
+                       placeholder="Titel..." maxlength="200" required>
+                <div class="replace-form-btns">
+                  <button type="submit" class="btn btn-primary btn-sm">Speichern</button>
+                  <button type="button" class="btn btn-ghost btn-sm" onclick="togglePanel('rename-<%= pdf.uuid %>')">Abbrechen</button>
+                </div>
               </form>
             </div>
 
@@ -176,7 +191,12 @@
     /* expand/collapse panels */
     function togglePanel(id) {
       const el = document.getElementById(id);
-      if (el) el.classList.toggle('panel-open');
+      if (!el) return;
+      el.classList.toggle('panel-open');
+      if (el.classList.contains('panel-open')) {
+        const inp = el.querySelector('input[type="text"]');
+        if (inp) { inp.focus(); inp.select(); }
+      }
     }
 
     /* QR download */

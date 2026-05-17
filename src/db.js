@@ -91,6 +91,15 @@ function getAllPdfs() {
     .sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt));
 }
 
+function renamePdf(slotUuid, newName) {
+  const db = load();
+  const entry = db[slotUuid];
+  if (!entry) throw new Error(`Slot ${slotUuid} not found`);
+  const name = newName.trim();
+  entry.filename = name.toLowerCase().endsWith('.pdf') ? name : name + '.pdf';
+  save(db);
+}
+
 function deletePdf(uuid) {
   const db = load();
   const entry = db[uuid];
@@ -100,4 +109,4 @@ function deletePdf(uuid) {
   return versionUuids;
 }
 
-module.exports = { addPdf, addVersion, setActiveVersion, deleteVersion, getPdf, getAllPdfs, deletePdf };
+module.exports = { addPdf, addVersion, setActiveVersion, deleteVersion, renamePdf, getPdf, getAllPdfs, deletePdf };

@@ -4,7 +4,7 @@ const multer  = require('multer');
 const QRCode  = require('qrcode');
 const { deletePDF, UPLOAD_DIR } = require('../storage');
 const {
-  addPdf, addVersion, setActiveVersion, deleteVersion,
+  addPdf, addVersion, setActiveVersion, deleteVersion, renamePdf,
   getPdf, getAllPdfs, deletePdf: deleteDbEntry,
 } = require('../db');
 const { requireAuth } = require('../middleware');
@@ -61,6 +61,18 @@ router.post('/replace/:uuid', requireAuth, upload.single('pdf'), (req, res) => {
     console.error('Replace error:', err.message);
     deletePDF(req.generatedVersionUuid);
     return res.redirect('/?error=replace-failed');
+  }
+  res.redirect('/');
+});
+
+router.post('/rename/:uuid', requireAuth, (req, res) => {
+  const name = (req.body.name || '').trim();
+  if (name) {
+    try {
+      renamePdf(req.params.uuid, name);
+    } catch (err) {
+      console.error('Rename error:', err.message);
+    }
   }
   res.redirect('/');
 });
